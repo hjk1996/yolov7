@@ -92,6 +92,7 @@ def detect(save_img=False):
         pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
         t3 = time_synchronized()
 
+        # TODO:
         # Apply Classifier
         if classify:
             pred = apply_classifier(pred, modelc, img, im0s)

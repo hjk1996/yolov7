@@ -605,11 +605,13 @@ def box_diou(box1, box2, eps: float = 1e-7):
     return iou - (centers_distance_squared / diagonal_distance_squared)
 
 
-def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=None, agnostic=False, multi_label=False,
+#TODO: NMS시 OUTPUT 하나만 반환할 수 있도록 조지기
+def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=None, agnostic=False, multi_label=False, return_max_conf=False,
                         labels=()):
     """Runs Non-Maximum Suppression (NMS) on inference results
 
     Returns:
+        shape: [batch_size, n_classes, 6]
          list of detections, on (n,6) tensor per image [xyxy, conf, cls]
     """
 
@@ -618,7 +620,7 @@ def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=Non
 
     # Settings
     min_wh, max_wh = 2, 4096  # (pixels) minimum and maximum box width and height
-    max_det = 300  # maximum number of detections per image
+    max_det = 1  # maximum number of detections per image
     max_nms = 30000  # maximum number of boxes into torchvision.ops.nms()
     time_limit = 10.0  # seconds to quit after
     redundant = True  # require redundant detections
@@ -696,8 +698,12 @@ def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=Non
         if (time.time() - t) > time_limit:
             print(f'WARNING: NMS time limit {time_limit}s exceeded')
             break  # time limit exceeded
-
-    return output
+    
+    if return_max_conf:
+        pass
+        torch.max(output, axis=2, )
+    else:
+        return output
 
 
 def non_max_suppression_kpt(prediction, conf_thres=0.25, iou_thres=0.45, classes=None, agnostic=False, multi_label=False,
@@ -793,6 +799,7 @@ def non_max_suppression_kpt(prediction, conf_thres=0.25, iou_thres=0.45, classes
         if (time.time() - t) > time_limit:
             print(f'WARNING: NMS time limit {time_limit}s exceeded')
             break  # time limit exceeded
+
 
     return output
 
