@@ -9,12 +9,12 @@ import torch
 import torch.nn as nn
 from torch.utils.mobile_optimizer import optimize_for_mobile
 
-import models
-from models.experimental import attempt_load, End2End
-from utils.activations import Hardswish, SiLU
-from utils.general import set_logging, check_img_size
-from utils.torch_utils import select_device
-from utils.add_nms import RegisterNMS
+import yolo_models
+from yolo_models.experimental import attempt_load, End2End
+from yolo_utils.activations import Hardswish, SiLU
+from yolo_utils.general import set_logging, check_img_size
+from yolo_utils.torch_utils import select_device
+from yolo_utils.add_nms import RegisterNMS
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     # Update model
     for k, m in model.named_modules():
         m._non_persistent_buffers_set = set()  # pytorch 1.6.0 compatibility
-        if isinstance(m, models.common.Conv):  # assign export-friendly activations
+        if isinstance(m, yolo_models.common.Conv):  # assign export-friendly activations
             if isinstance(m.act, nn.Hardswish):
                 m.act = Hardswish()
             elif isinstance(m.act, nn.SiLU):
