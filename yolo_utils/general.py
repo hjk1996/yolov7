@@ -615,7 +615,9 @@ def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=Non
          list of detections, on (n,6) tensor per image [xyxy, conf, cls]
     """
 
+    # [x, y, x, y, confidence, ...classes]
     nc = prediction.shape[2] - 5  # number of classes
+    # confidence가 기준치 이상인 것들에 대한 indices
     xc = prediction[..., 4] > conf_thres  # candidates
 
     # Settings
@@ -632,6 +634,7 @@ def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=Non
     for xi, x in enumerate(prediction):  # image index, image inference
         # Apply constraints
         # x[((x[..., 2:4] < min_wh) | (x[..., 2:4] > max_wh)).any(1), 4] = 0  # width-height
+        # confidence 기준치 이상인 것들만으로 거름
         x = x[xc[xi]]  # confidence
 
         # Cat apriori labels if autolabelling
