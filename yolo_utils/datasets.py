@@ -166,7 +166,7 @@ class LoadImages:  # for inference
         if self.video_flag[self.count]:
             # Read video
             self.mode = 'video'
-            ret_val, img0 = self.cap.read()
+            ret_val, cv2_img = self.cap.read()
             if not ret_val:
                 self.count += 1
                 self.cap.release()
@@ -175,7 +175,7 @@ class LoadImages:  # for inference
                 else:
                     path = self.files[self.count]
                     self.new_video(path)
-                    ret_val, img0 = self.cap.read()
+                    ret_val, cv2_img = self.cap.read()
 
             self.frame += 1
             print(f'video {self.count + 1}/{self.nf} ({self.frame}/{self.nframes}) {path}: ', end='')
@@ -183,18 +183,18 @@ class LoadImages:  # for inference
         else:
             # Read image
             self.count += 1
-            img0 = cv2.imread(path)  # BGR
-            assert img0 is not None, 'Image Not Found ' + path
+            cv2_img = cv2.imread(path)  # BGR
+            assert cv2_img is not None, 'Image Not Found ' + path
             #print(f'image {self.count}/{self.nf} {path}: ', end='')
 
         # Padded resize
-        img = letterbox(img0, self.img_size, stride=self.stride)[0]
+        img = letterbox(cv2_img, self.img_size, stride=self.stride)[0]
 
         # Convert
         img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
         img = np.ascontiguousarray(img)
 
-        return path, img, img0, self.cap
+        return path, img, cv2_img, self.cap
 
     def new_video(self, path):
         self.frame = 0
@@ -981,6 +981,7 @@ def replicate(img, labels):
     return img, labels
 
 
+# 이미지 리사이즈하고 레터박스 그려줌
 def letterbox(img, new_shape=(640, 640), color=(114, 114, 114), auto=True, scaleFill=False, scaleup=True, stride=32):
     # Resize and pad image while meeting stride-multiple constraints
     shape = img.shape[:2]  # current shape [height, width]
@@ -988,6 +989,7 @@ def letterbox(img, new_shape=(640, 640), color=(114, 114, 114), auto=True, scale
         new_shape = (new_shape, new_shape)
 
     # Scale ratio (new / old)
+    # 가로세로중 더 많이 줄어든 쪽을 이미지를 리사이즈할 비율로 사용함
     r = min(new_shape[0] / shape[0], new_shape[1] / shape[1])
     if not scaleup:  # only scale down, do not scale up (for better test mAP)
         r = min(r, 1.0)
@@ -995,6 +997,7 @@ def letterbox(img, new_shape=(640, 640), color=(114, 114, 114), auto=True, scale
     # Compute padding
     ratio = r, r  # width, height ratios
     new_unpad = int(round(shape[1] * r)), int(round(shape[0] * r))
+    # 가로 세로로 패딩이 필요한 크기를 구함
     dw, dh = new_shape[1] - new_unpad[0], new_shape[0] - new_unpad[1]  # wh padding
     if auto:  # minimum rectangle
         dw, dh = np.mod(dw, stride), np.mod(dh, stride)  # wh padding
